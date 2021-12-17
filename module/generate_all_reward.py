@@ -83,3 +83,41 @@ def validate_title(title):
     rstr = r"[\/\\\:\*\?\"\<\>\|]"  # '/ \ : * ? " < > |'
     new_title = re.sub(rstr, "_", title)  # 替换为下划线
     return new_title
+
+
+def get_days_number(args):
+    logging.info('开始检查已完成里程碑的天数…')
+
+    url = args.act_url
+    if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
+        raise ValueError('输入地址不是正确的活动网页地址')
+
+    response = requests_get(url)
+    html = response.text
+    find = re.findall(r'var jumpUrl = \'https://www\.bilibili\.com/blackboard/dynamic/(\d+)\';\n', html)
+    if not find:
+        raise Exception('查找 jumpUrl 失败')
+
+    dynamic_info_url = f'https://api.bilibili.com/x/native_page/dynamic/index?page_id={find[0]}&jsonp=jsonp'
+    response = requests_get(dynamic_info_url)
+
+    data = response.json()
+    for item in data['data']['cards']:
+        progress_number = find_progress(item)
+        if progress_number > -1:
+            logging.info(f'目前里程碑已经完成{progress_number}天')
+            return
+    logging.info(f'没有找到里程碑完成数据情况')
+
+
+def find_progress(item) -> int:
+    if item.get('goto') == 'click_progress':
+        return item['click_ext']['current_num']
+
+    if item.get('item'):
+        for sub_item in item.get('item'):
+            number = find_progress(sub_item)
+            if number > -1:
+                return number
+
+    return -1

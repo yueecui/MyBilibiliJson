@@ -8,6 +8,8 @@ def receive_reward(reward_id: str):
 
     logging.info(f'开始领取{award.name}')
 
+    count = 0
+
     while True:
         if award.receive_id == 0:
             logging.info(f'没有达成领取条件，正在重试')
@@ -22,5 +24,9 @@ def receive_reward(reward_id: str):
         if award.receive():
             logging.info(f'已领取成功，请去网页查看')
             break
-
-        time.sleep(0.3)
+        else:
+            logging.info(f'正在尝试进行领取奖励')
+            count += 1
+            if count % 10 == 0:
+                award.update_award()
+            time.sleep(0.3)
