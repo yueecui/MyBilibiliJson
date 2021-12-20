@@ -1,10 +1,13 @@
 from browser_cookie3 import ChromiumBased
 import requests
+import logging
 
 
 class ChromeCookies(ChromiumBased):
     """Class for Google Chrome"""
     def __init__(self, cookie_file=None, domain_name="", key_file=None, profile_name="Default"):
+        logging.info(f'正在获取Chrome用户"{profile_name}"于"{domain_name}"的cookies')
+
         args = {
             'linux_cookies': [
                     '~/.config/google-chrome/'+profile_name+'/Cookies',

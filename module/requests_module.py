@@ -3,10 +3,6 @@ import requests
 from .chrome_cookies import get_bilibili_cookies
 
 
-COOKIES = get_bilibili_cookies()
-if COOKIES is None:
-    raise ValueError("没有正确获得bilibli.com的cookies")
-
 POST_HEADERS = {
     # ":method": "POST",
     # ":authority": "api.bilibili.com",
@@ -28,26 +24,29 @@ POST_HEADERS = {
     "accept-language": "zh-CN,zh;q=0.9",
 }
 
-MAX_TRY = 3
 
-
-def requests_get(url: str, **kwargs):
+def requests_get(url: str, profile_name='Default', **kwargs):
     retry_count = 0
-    while retry_count < MAX_TRY:
-        response = requests.get(url, cookies=COOKIES, **kwargs)
+    cookies = get_bilibili_cookies(profile_name)
+    if cookies is None:
+        raise ValueError(f'没有在"{profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+    while True:
+
+        response = requests.get(url, cookies=cookies, **kwargs)
         if response.status_code == 200:
             return response
         retry_count += 1
-        logging.info(f'GET <{url}>失败，状态码：{response.status_code}，第{retry_count}次重试')
-    return None
+        logging.info(f'GET <{url}>失败第{retry_count}次，状态码：{response.status_code}，第{retry_count}次重试')
 
 
-def requests_post(url: str, **kwargs):
+def requests_post(url: str, profile_name='Default', **kwargs):
     retry_count = 0
-    while retry_count < MAX_TRY:
-        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=COOKIES)
+    cookies = get_bilibili_cookies(profile_name)
+    if cookies is None:
+        raise ValueError(f'没有在"{profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+    while True:
+        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=cookies)
         if response.status_code == 200:
             return response
         retry_count += 1
-        logging.info(f'POST <{url}>失败，状态码：{response.status_code}，第{retry_count}次重试')
-    return None
+        logging.info(f'POST <{url}>失败第{retry_count}次，状态码：{response.status_code}，第{retry_count}次重试')

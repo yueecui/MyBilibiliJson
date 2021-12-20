@@ -25,6 +25,7 @@ def main():
     parser.add_argument('act_url', nargs='?', help='填写一个活动网页地址，生成该地址中所有奖励原石、还有存货、还没领过的奖项对应的执行批处理')
     parser.add_argument('-k', '--keyword', nargs='?', help='从活动网页保存奖励时，只包含关键词的的奖项')
     parser.add_argument('-d', '--days', action='store_true', help='配合一个活动网址，查询当前用户已经完成任务的天数')
+    parser.add_argument('-p', '-u', '--profile', '--user', default='Default', help='读取的chrome profile名称。默认为Default，路径：%%LOCALAPPDATA%%\\Google\\Chrome\\User Data')
     parser.add_argument('-r', '--reward', help='尝试不停领取目标ID奖励')
 
     # 获取解析后的参数
@@ -36,7 +37,7 @@ def main():
         else:
             generate_all_reward(args)
     elif args.reward is not None:
-        receive_reward(args.reward)
+        receive_reward(args)
     else:
         parser.print_help()
 

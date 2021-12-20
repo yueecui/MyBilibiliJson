@@ -3,8 +3,9 @@ import time
 from .bili_activity_award import BiliActivityAward
 
 
-def receive_reward(reward_id: str):
-    award = BiliActivityAward(reward_id)
+def receive_reward(args):
+    reward_id = args.reward
+    award = BiliActivityAward(reward_id, profile_name=args.profile)
 
     logging.info(f'开始领取{award.name}')
 

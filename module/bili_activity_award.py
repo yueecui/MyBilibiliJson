@@ -8,13 +8,14 @@ RECEIVE_URL = 'https://api.bilibili.com/x/activity/mission/task/reward/receive'
 
 
 class BiliActivityAward:
-    def __init__(self, task_id: str):
+    def __init__(self, task_id: str, profile_name='Default'):
         self._task_id = task_id
-        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={get_bilibili_csrf()}&id={task_id}'
+        self._profile_name = profile_name
+        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={get_bilibili_csrf(self._profile_name)}&id={task_id}'
         self._raw_data = None
 
     def update_award(self):
-        response = requests_get(self._task_url)
+        response = requests_get(self._task_url, profile_name=self._profile_name)
         self._raw_data = response.json()
 
     @property
@@ -76,7 +77,7 @@ class BiliActivityAward:
     # 尝试进行领取
     def receive(self):
         data = {
-            'csrf': get_bilibili_csrf(),
+            'csrf': get_bilibili_csrf(self._profile_name),
             'act_id': self._raw_data['data']['task_info']['group_list'][0]['act_id'],
             'task_id': self._raw_data['data']['task_info']['group_list'][0]['task_id'],
             'group_id': self._raw_data['data']['task_info']['group_list'][0]['group_id'],

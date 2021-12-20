@@ -11,7 +11,7 @@ def generate_all_reward(args):
     # 获取所有需要生成的奖励列表
     task_list = parse_activity_reward(args)
     # 生成对应的bat
-    generate_bat(task_list)
+    generate_bat(task_list, args.profile)
 
 
 def parse_activity_reward(args):
@@ -19,7 +19,7 @@ def parse_activity_reward(args):
     if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
-    response = requests_get(url)
+    response = requests_get(url, profile_name=args.profile)
     html = response.text
     find = re.findall(r'window.__initialState = (.+);\n', html)
     if not find:
@@ -33,7 +33,7 @@ def parse_activity_reward(args):
         if not find:
             continue
 
-        award = BiliActivityAward(find[0])
+        award = BiliActivityAward(find[0], profile_name=args.profile)
         if args.keyword is not None and award.reward_name.find(args.keyword) == -1:
             logging.info(f'{award.name}：奖励中没有关键词{args.keyword}，跳过生成')
             continue
@@ -53,7 +53,7 @@ def parse_activity_reward(args):
 
 
 # 生成执行用的BAT
-def generate_bat(task_list):
+def generate_bat(task_list, profile_name):
     root_file_list = os.listdir()
     # 移除旧的
     for bat_name in root_file_list:
@@ -70,7 +70,7 @@ def generate_bat(task_list):
     for task in task_list:
         bat_file_path = validate_title(os.path.join(f'{task["name"]}.bat'))
         with open(bat_file_path, 'w') as f:
-            f.write(f'@{exe_name} -r {task["id"]}\n@pause')
+            f.write(f'@{exe_name} -r {task["id"]} --profile "{profile_name}"\n@pause')
         count += 1
 
     if count > 0:
@@ -92,14 +92,14 @@ def get_days_number(args):
     if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
-    response = requests_get(url)
+    response = requests_get(url, profile_name=args.profile)
     html = response.text
     find = re.findall(r'var jumpUrl = \'https://www\.bilibili\.com/blackboard/dynamic/(\d+)\';\n', html)
     if not find:
         raise Exception('查找 jumpUrl 失败')
 
     dynamic_info_url = f'https://api.bilibili.com/x/native_page/dynamic/index?page_id={find[0]}&jsonp=jsonp'
-    response = requests_get(dynamic_info_url)
+    response = requests_get(dynamic_info_url, profile_name=args.profile)
 
     data = response.json()
     for item in data['data']['cards']:
