@@ -40,8 +40,12 @@ target_profile_name = 'Default'
 
 def set_profile_name(name: str):
     global target_profile_name
-    logging.info(f'使用Chrome用户"{target_profile_name}"的cookies数据进行操作')
     target_profile_name = name
+    logging.info(f'使用Chrome用户"{target_profile_name}"的cookies数据进行操作')
+
+
+def get_profile_name():
+    return target_profile_name
 
 
 def get_bilibili_cookies():

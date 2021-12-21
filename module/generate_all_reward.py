@@ -3,7 +3,7 @@ import re
 import json
 import os
 import sys
-from .requests_module import requests_get, target_profile_name
+from .requests_module import requests_get, get_profile_name
 from .bili_activity_award import BiliActivityAward
 
 
@@ -70,7 +70,7 @@ def generate_bat(task_list):
     for task in task_list:
         bat_file_path = validate_title(os.path.join(f'{task["name"]}.bat'))
         with open(bat_file_path, 'w') as f:
-            f.write(f'@{exe_name} -r {task["id"]} --profile "{target_profile_name}"\n@pause')
+            f.write(f'@{exe_name} -r {task["id"]} --profile "{get_profile_name()}"\n@pause')
         count += 1
 
     if count > 0:
