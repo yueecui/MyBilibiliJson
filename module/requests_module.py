@@ -1,6 +1,6 @@
 import logging
 import requests
-from .chrome_cookies import get_bilibili_cookies
+from .chrome_cookies import get_bilibili_cookies, target_profile_name
 
 
 POST_HEADERS = {
@@ -25,27 +25,27 @@ POST_HEADERS = {
 }
 
 
-def requests_get(url: str, profile_name='Default', **kwargs):
+def requests_get(url: str, **kwargs):
     retry_count = 0
-    cookies = get_bilibili_cookies(profile_name)
+    cookies = get_bilibili_cookies()
     if cookies is None:
-        raise ValueError(f'没有在"{profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+        raise ValueError(f'没有在"{target_profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
     while True:
 
-        response = requests.get(url, cookies=cookies, **kwargs)
+        response = requests.get(url, cookies=cookies, timeout=10, **kwargs)
         if response.status_code == 200:
             return response
         retry_count += 1
         logging.info(f'GET <{url}>失败第{retry_count}次，状态码：{response.status_code}，第{retry_count}次重试')
 
 
-def requests_post(url: str, profile_name='Default', **kwargs):
+def requests_post(url: str, **kwargs):
     retry_count = 0
-    cookies = get_bilibili_cookies(profile_name)
+    cookies = get_bilibili_cookies()
     if cookies is None:
-        raise ValueError(f'没有在"{profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+        raise ValueError(f'没有在"{target_profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
     while True:
-        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=cookies)
+        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=cookies, timeout=10)
         if response.status_code == 200:
             return response
         retry_count += 1

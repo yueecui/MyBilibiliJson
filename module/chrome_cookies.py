@@ -6,7 +6,7 @@ import logging
 class ChromeCookies(ChromiumBased):
     """Class for Google Chrome"""
     def __init__(self, cookie_file=None, domain_name="", key_file=None, profile_name="Default"):
-        logging.info(f'正在获取Chrome用户"{profile_name}"于"{domain_name}"的cookies')
+        logging.debug(f'正在获取Chrome用户"{profile_name}"于"{domain_name}"的cookies')
 
         args = {
             'linux_cookies': [
@@ -35,10 +35,19 @@ class ChromeCookies(ChromiumBased):
         super().__init__(browser='Chrome', cookie_file=cookie_file, domain_name=domain_name, key_file=key_file, **args)
 
 
-def get_bilibili_cookies(profile_name="Default"):
+target_profile_name = 'Default'
+
+
+def set_profile_name(name: str):
+    global target_profile_name
+    logging.info(f'使用Chrome用户"{target_profile_name}"的cookies数据进行操作')
+    target_profile_name = name
+
+
+def get_bilibili_cookies():
     game_cookies = requests.cookies.RequestsCookieJar()
     for host in ['.bilibili.com']:
-        cookies = ChromeCookies(domain_name=host, profile_name=profile_name).load()
+        cookies = ChromeCookies(domain_name=host, profile_name=target_profile_name).load()
         game_cookies.update(cookies)
     if len(game_cookies) == 0:
         return None
@@ -49,11 +58,11 @@ def get_bilibili_cookies(profile_name="Default"):
 bilibili_csrf = None
 
 
-def get_bilibili_csrf(profile_name="Default"):
+def get_bilibili_csrf():
     if bilibili_csrf is not None:
         return bilibili_csrf
     host = '.bilibili.com'
-    cookies = ChromeCookies(domain_name=host, profile_name=profile_name).load()
+    cookies = ChromeCookies(domain_name=host, profile_name=target_profile_name).load()
     for cookie in cookies:
         if cookie.name == 'bili_jct':
             return cookie.value

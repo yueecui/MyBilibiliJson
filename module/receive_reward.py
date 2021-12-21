@@ -5,7 +5,7 @@ from .bili_activity_award import BiliActivityAward
 
 def receive_reward(args):
     reward_id = args.reward
-    award = BiliActivityAward(reward_id, profile_name=args.profile)
+    award = BiliActivityAward(reward_id)
 
     logging.info(f'开始领取{award.name}')
 

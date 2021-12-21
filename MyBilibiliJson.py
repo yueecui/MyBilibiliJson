@@ -3,21 +3,22 @@ import sys
 import argparse
 from module.generate_all_reward import generate_all_reward, get_days_number
 from module.receive_reward import receive_reward
+from module.chrome_cookies import set_profile_name
 
 
-def init():
+def init(debug):
     # 初始化logging
     logging.basicConfig(stream=sys.stdout,
                         format='[%(asctime)s][%(levelname)s] %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
-                        level=logging.INFO)
+                        level=logging.DEBUG if debug else logging.INFO)
 
 
 def main():
     # 创建命令行参数解析器
     parser = argparse.ArgumentParser(
         description='My Bilibili Json',
-        epilog='最后更新日期: 2021-12-16')
+        epilog='最后更新日期: 2021-12-21')
 
     # 不输入参数时显示帮助
     # 输入一个位置参数时，参数为活动地址网页（https://www.bilibili.com/blackboard/activity-8Zdc2qDY6R.html 类似），生成该网页所有奖励原石、还有货、还没领过的bat
@@ -27,9 +28,15 @@ def main():
     parser.add_argument('-d', '--days', action='store_true', help='配合一个活动网址，查询当前用户已经完成任务的天数')
     parser.add_argument('-p', '-u', '--profile', '--user', default='Default', help='读取的chrome profile名称。默认为Default，路径：%%LOCALAPPDATA%%\\Google\\Chrome\\User Data')
     parser.add_argument('-r', '--reward', help='尝试不停领取目标ID奖励')
+    parser.add_argument('--debug', action='store_true', help='输出调试log')
 
     # 获取解析后的参数
     args = parser.parse_args()
+
+    # 初始化logging
+    init(args.debug)
+
+    set_profile_name(args.profile)
 
     if args.act_url is not None:
         if args.days:
@@ -43,7 +50,6 @@ def main():
 
 
 if __name__ == '__main__':
-    init()
     main()
 
 
