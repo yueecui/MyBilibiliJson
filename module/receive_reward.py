@@ -22,6 +22,10 @@ def receive_reward(args):
             logging.info(f'该奖励已经领取')
             break
 
+        if not award.has_daily_stock:
+            logging.info(f'每日领取数量已达上限')
+            break
+
         if award.receive():
             logging.info(f'已领取成功，请去网页查看')
             break

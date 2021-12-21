@@ -37,7 +37,7 @@ def parse_activity_reward(args):
         if args.keyword is not None and award.reward_name.find(args.keyword) == -1:
             logging.info(f'{award.name}：奖励中没有关键词{args.keyword}，跳过生成')
             continue
-        if not award.has_stock:
+        if not award.has_total_stock:
             logging.info(f'{award.name}：奖励已无库存，跳过生成')
             continue
         if not award.is_daily and award.receive_status == 3:

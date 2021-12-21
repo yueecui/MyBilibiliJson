@@ -58,13 +58,23 @@ class BiliActivityAward:
         return f'[{self._task_id}]{self.task_name} - {self.reward_name}'
 
     @property
-    def has_stock(self):
+    def has_total_stock(self):
         if self._raw_data is None:
             self.update_award()
         for reward_stock in self._raw_data['data']['task_info']['reward_stock_configs']:
             if reward_stock['cycle_type'] == 1:
                 return reward_stock['total'] > reward_stock['consumed']
         return False
+
+    @property
+    def has_daily_stock(self):
+        if self._raw_data is None:
+            self.update_award()
+        for reward_stock in self._raw_data['data']['task_info']['reward_stock_configs']:
+            if reward_stock['cycle_type'] == 2:
+                return reward_stock['total'] > reward_stock['consumed']
+        return False
+
 
     # true表示是日常奖励，false表示是一次性奖励
     @property
