@@ -29,6 +29,8 @@ def main():
     parser.add_argument('-p', '-u', '--profile', '--user', default='Default', help='读取的chrome profile名称。默认为Default，路径：%%LOCALAPPDATA%%\\Google\\Chrome\\User Data')
     parser.add_argument('-r', '--reward', help='尝试不停领取目标ID奖励')
     parser.add_argument('--debug', action='store_true', help='输出调试log')
+    parser.add_argument('--start', help='设定任务开始的时间，格式HH:MM:SS')
+    parser.add_argument('--sleep', help='每次请求发送后休眠的时间')
 
     # 获取解析后的参数
     args = parser.parse_args()
