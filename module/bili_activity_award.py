@@ -1,6 +1,4 @@
-import logging
-import re
-import json
+import time
 from .requests_module import requests_post, requests_get
 from .chrome_cookies import get_bilibili_csrf
 
@@ -32,6 +30,12 @@ class BiliActivityAward:
         if self._raw_data is None:
             self.update_award()
         return self._raw_data['data']['task_info']['task_name']
+
+    @property
+    def is_exist(self):
+        if self._raw_data is None:
+            self.update_award()
+        return not (self._raw_data['data']['act_info'] is None or self._raw_data['data']['task_info'] is None)
 
     @property
     def reward_name(self):
@@ -75,13 +79,19 @@ class BiliActivityAward:
                 return reward_stock['total'] > reward_stock['consumed']
         return False
 
-
     # true表示是日常奖励，false表示是一次性奖励
     @property
     def is_daily(self):
         if self._raw_data is None:
             self.update_award()
         return self._raw_data['data']['task_info']['task_period'] > 0
+
+    # true表示是活动已经结束，false表示活动还在进行中
+    @property
+    def is_end(self):
+        if self._raw_data is None:
+            self.update_award()
+        return time.time() >= self._raw_data['data']['act_info']['end_time']
 
     # 尝试进行领取
     def receive(self):

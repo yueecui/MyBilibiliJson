@@ -15,7 +15,7 @@ def generate_all_reward(args):
 
 
 def parse_activity_reward(args):
-    url = args.act_url
+    url = args.url
     if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
@@ -27,15 +27,23 @@ def parse_activity_reward(args):
     initial_state = json.loads(find[0])
 
     task_list = []
-    for button in initial_state['button']:
-        find = re.findall(r'https://www\.bilibili\.com/blackboard/activity-award-exchange\.html\?task_id=(.*)',
-                          button['button_jump_url'])
-        if not find:
+    all_task = re.findall(r'"https://www\.bilibili\.com/blackboard/activity-award-exchange\.html\?task_id=([^\s]{8}).*?"', find[0])
+    for task_id in all_task:
+        award = BiliActivityAward(task_id)
+        if not award.is_exist:
+            logging.info(f'任务{task_id}：信息为空，跳过生成')
             continue
-
-        award = BiliActivityAward(find[0])
-        if args.keyword is not None and award.reward_name.find(args.keyword) == -1:
-            logging.info(f'{award.name}：奖励中没有关键词{args.keyword}，跳过生成')
+        if len(args.keyword) > 0:
+            find = False
+            for keyword in args.keyword:
+                if award.name.find(keyword) > -1:
+                    find = True
+                    break
+            if not find:
+                logging.info(f'{award.name}：任务名称和奖励中没有符合条件的关键词，跳过生成')
+                continue
+        if award.is_end:
+            logging.info(f'{award.name}：该奖励所处活动已经结束，跳过生成')
             continue
         if not award.has_total_stock:
             logging.info(f'{award.name}：奖励已无库存，跳过生成')
@@ -70,7 +78,8 @@ def generate_bat(task_list):
     for task in task_list:
         bat_file_path = validate_title(os.path.join(f'{task["name"]}.bat'))
         with open(bat_file_path, 'w') as f:
-            f.write(f'@{exe_name} -r {task["id"]} --profile "{get_profile_name()}"\n@pause')
+            # f.write(f'@{exe_name} -r {task["id"]} --profile "{get_profile_name()}"\n@pause')
+            f.write(f'@{exe_name} -r {task["id"]}\n@pause')
         count += 1
 
     if count > 0:
@@ -88,7 +97,7 @@ def validate_title(title):
 def get_days_number(args):
     logging.info('开始检查已完成里程碑的天数…')
 
-    url = args.act_url
+    url = args.url
     if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
