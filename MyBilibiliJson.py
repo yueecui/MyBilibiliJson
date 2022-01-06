@@ -2,6 +2,7 @@ import logging
 import sys
 import argparse
 import re
+import time
 from module.generate_all_reward import generate_all_reward, get_days_number
 from module.receive_reward import receive_reward
 from module.chrome_cookies import set_profile_name
@@ -70,7 +71,14 @@ def main():
     set_profile_name(args.profile)
 
     if args.reward is not None:
-        receive_reward(args)
+        while True:
+            try:
+                receive_reward(args)
+                break
+            except Exception as e:
+                logging.error('运行时出现错误，错误信息：%s' % e)
+                logging.info('1秒后开始重新运行')
+                time.sleep(1)
     elif args.url is not None:
         if args.days:
             get_days_number(args)
