@@ -1,9 +1,8 @@
 import logging
 import re
-import json
 import os
 import sys
-from .requests_module import requests_get, get_profile_name
+from .requests_module import requests_get
 from .bili_activity_award import BiliActivityAward
 
 
@@ -16,7 +15,7 @@ def generate_all_reward(args):
 
 def parse_activity_reward(args):
     url = args.url
-    if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
+    if re.match(r'https://www.bilibili.com/blackboard/activity-[^.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
     response = requests_get(url)
@@ -24,10 +23,13 @@ def parse_activity_reward(args):
     find = re.findall(r'window.__initialState = (.+);\n', html)
     if not find:
         raise Exception('查找 initialState 失败')
-    initial_state = json.loads(find[0])
+    # initial_state = json.loads(find[0])
 
     task_list = []
-    all_task = re.findall(r'"https://www\.bilibili\.com/blackboard/activity-award-exchange\.html\?task_id=([^\s]{8}).*?"', find[0])
+    all_task = re.findall(
+        r'"https://www\.bilibili\.com/blackboard/activity-award-exchange\.html\?task_id=([^\s]{8}).*?"',
+        find[0]
+    )
     for task_id in all_task:
         award = BiliActivityAward(task_id)
         if not award.is_exist:
@@ -66,7 +68,7 @@ def generate_bat(task_list):
     # 移除旧的
     for bat_name in root_file_list:
         (file_name, file_type) = os.path.splitext(bat_name)
-        if not re.match(r'\[.*?\].+', file_name):
+        if not re.match(r'\[.*?].+', file_name):
             continue
         bat_file_path = os.path.join(bat_name)
         if file_type == '.bat' and (not os.path.isdir(bat_file_path)) and os.path.exists(bat_file_path):
@@ -98,7 +100,7 @@ def get_days_number(args):
     logging.info('开始检查已完成里程碑的天数…')
 
     url = args.url
-    if re.match(r'https://www.bilibili.com/blackboard/activity-[^\.]+?.html', url) is None:
+    if re.match(r'https://www.bilibili.com/blackboard/activity-[^.]+?.html', url) is None:
         raise ValueError('输入地址不是正确的活动网页地址')
 
     response = requests_get(url)

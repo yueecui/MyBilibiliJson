@@ -1,6 +1,6 @@
 import logging
 import requests
-from .chrome_cookies import get_bilibili_cookies, get_profile_name
+from .chrome_cookies import get_bilibili_cookies
 
 
 POST_HEADERS = {
@@ -27,13 +27,14 @@ POST_HEADERS = {
 
 def requests_get(url: str, **kwargs):
     retry_count = 0
-    cookies = get_bilibili_cookies()
-    if cookies is None:
-        raise ValueError(f'没有在"{get_profile_name()}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+    bilibili_cookies = get_bilibili_cookies()
+    # if bilibili_cookies is None:
+    #     raise ValueError(f'没有在"{bilibili_cookies.profile_name}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
     while True:
 
-        response = requests.get(url, cookies=cookies, timeout=10, **kwargs)
+        response = requests.get(url, cookies=bilibili_cookies.cookies, timeout=10, **kwargs)
         if response.status_code == 200:
+            bilibili_cookies.update(response.cookies)
             return response
         retry_count += 1
         logging.info(f'GET <{url}>失败第{retry_count}次，状态码：{response.status_code}，第{retry_count}次重试')
@@ -41,12 +42,13 @@ def requests_get(url: str, **kwargs):
 
 def requests_post(url: str, **kwargs):
     retry_count = 0
-    cookies = get_bilibili_cookies()
-    if cookies is None:
-        raise ValueError(f'没有在"{get_profile_name()}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
+    bilibili_cookies = get_bilibili_cookies()
+    # if cookies is None:
+    #     raise ValueError(f'没有在"{get_profile_name()}"目录找到bilibli.com的cookies，请检查"%LOCALAPPDATA%\\Google\\Chrome\\User Data"，并填写正确的Profile名称')
     while True:
-        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=cookies, timeout=10)
+        response = requests.post(url, **kwargs, headers=POST_HEADERS, cookies=bilibili_cookies.cookies, timeout=10)
         if response.status_code == 200:
+            bilibili_cookies.update(response.cookies)
             return response
         retry_count += 1
         logging.info(f'POST <{url}>失败第{retry_count}次，状态码：{response.status_code}，第{retry_count}次重试')

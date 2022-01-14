@@ -5,7 +5,7 @@ import re
 import time
 from module.generate_all_reward import generate_all_reward, get_days_number
 from module.receive_reward import receive_reward
-from module.chrome_cookies import set_profile_name
+from module.chrome_cookies import init_bilibili_cookies
 from module.config_loader import config_loader
 
 
@@ -34,15 +34,25 @@ def update_args_from_config(args):
 
     # 初始化领取奖励时的参数
     args.sleep_time = cfg.getfloat('RECEIVE_CONFIG', 'sleep_time')
+    args.start_time = find_start_time(cfg.get('RECEIVE_CONFIG', 'start_time'))
 
-    # 使用正则表达式找到HH:MM:SS，三个时间
-    find_time = re.findall(r'^(\d{1,2}):(\d{1,2}):(\d{1,2})$', cfg.get('RECEIVE_CONFIG', 'start_time').strip())
-    if find_time:
-        args.start_time = [int(find_time[0][0]), int(find_time[0][1]), int(find_time[0][2])]
-    else:
-        args.start_time = None
+    args.start_config = {}
+    if 'RECEIVE_START_TIME_MAP' in cfg:
+        for key in cfg['RECEIVE_START_TIME_MAP']:
+            args.start_config[key] = find_start_time(cfg.get('RECEIVE_START_TIME_MAP', key))
+
+    args.is_start = False
 
     return args
+
+
+# 使用正则表达式找到HH:MM:SS，三个时间
+def find_start_time(start_time_raw: str):
+    find_time = re.findall(r'^(\d{1,2}):(\d{1,2}):(\d{1,2})$', start_time_raw.strip())
+    if find_time:
+        return [int(find_time[0][0]), int(find_time[0][1]), int(find_time[0][2])]
+    else:
+        return None
 
 
 def main():
@@ -68,7 +78,7 @@ def main():
     # 初始化logging
     init_logging(args.debug)
 
-    set_profile_name(args.profile)
+    init_bilibili_cookies(args.profile)
 
     if args.reward is not None:
         while True:

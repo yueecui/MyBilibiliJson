@@ -1,6 +1,6 @@
 import time
 from .requests_module import requests_post, requests_get
-from .chrome_cookies import get_bilibili_csrf
+from .chrome_cookies import get_bilibili_cookies
 
 RECEIVE_URL = 'https://api.bilibili.com/x/activity/mission/task/reward/receive'
 
@@ -8,7 +8,8 @@ RECEIVE_URL = 'https://api.bilibili.com/x/activity/mission/task/reward/receive'
 class BiliActivityAward:
     def __init__(self, task_id: str):
         self._task_id = task_id
-        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={get_bilibili_csrf()}&id={task_id}'
+        self._csrf = get_bilibili_cookies().csrf
+        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={self._csrf}&id={task_id}'
         self._raw_data = None
 
     def update_award(self):
@@ -96,7 +97,7 @@ class BiliActivityAward:
     # 尝试进行领取
     def receive(self):
         data = {
-            'csrf': get_bilibili_csrf(),
+            'csrf': self._csrf,
             'act_id': self._raw_data['data']['task_info']['group_list'][0]['act_id'],
             'task_id': self._raw_data['data']['task_info']['group_list'][0]['task_id'],
             'group_id': self._raw_data['data']['task_info']['group_list'][0]['group_id'],
@@ -112,5 +113,3 @@ class BiliActivityAward:
         if response.text.find('已领取') >= 0:
             return True
         return False
-
-
