@@ -1,8 +1,6 @@
-import logging
-import re
-import json
+import time
 from .requests_module import requests_post, requests_get
-from .chrome_cookies import get_bilibili_csrf
+from .chrome_cookies import get_bilibili_cookies
 
 RECEIVE_URL = 'https://api.bilibili.com/x/activity/mission/task/reward/receive'
 
@@ -10,7 +8,8 @@ RECEIVE_URL = 'https://api.bilibili.com/x/activity/mission/task/reward/receive'
 class BiliActivityAward:
     def __init__(self, task_id: str):
         self._task_id = task_id
-        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={get_bilibili_csrf()}&id={task_id}'
+        self._csrf = get_bilibili_cookies().csrf
+        self._task_url = f'https://api.bilibili.com/x/activity/mission/single_task?csrf={self._csrf}&id={task_id}'
         self._raw_data = None
 
     def update_award(self):
@@ -32,6 +31,12 @@ class BiliActivityAward:
         if self._raw_data is None:
             self.update_award()
         return self._raw_data['data']['task_info']['task_name']
+
+    @property
+    def is_exist(self):
+        if self._raw_data is None:
+            self.update_award()
+        return not (self._raw_data['data']['act_info'] is None or self._raw_data['data']['task_info'] is None)
 
     @property
     def reward_name(self):
@@ -75,7 +80,6 @@ class BiliActivityAward:
                 return reward_stock['total'] > reward_stock['consumed']
         return False
 
-
     # true表示是日常奖励，false表示是一次性奖励
     @property
     def is_daily(self):
@@ -83,10 +87,17 @@ class BiliActivityAward:
             self.update_award()
         return self._raw_data['data']['task_info']['task_period'] > 0
 
+    # true表示是活动已经结束，false表示活动还在进行中
+    @property
+    def is_end(self):
+        if self._raw_data is None:
+            self.update_award()
+        return time.time() >= self._raw_data['data']['act_info']['end_time']
+
     # 尝试进行领取
     def receive(self):
         data = {
-            'csrf': get_bilibili_csrf(),
+            'csrf': self._csrf,
             'act_id': self._raw_data['data']['task_info']['group_list'][0]['act_id'],
             'task_id': self._raw_data['data']['task_info']['group_list'][0]['task_id'],
             'group_id': self._raw_data['data']['task_info']['group_list'][0]['group_id'],
@@ -102,5 +113,3 @@ class BiliActivityAward:
         if response.text.find('已领取') >= 0:
             return True
         return False
-
-
