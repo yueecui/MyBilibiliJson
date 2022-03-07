@@ -35,6 +35,9 @@ def update_args_from_config(args):
     # 初始化领取奖励时的参数
     args.sleep_time = cfg.getfloat('RECEIVE_CONFIG', 'sleep_time')
     args.start_time = find_start_time(cfg.get('RECEIVE_CONFIG', 'start_time'))
+    args.day_start = find_start_time(cfg.get('RECEIVE_CONFIG', 'day_start'))
+    if args.day_start is None:
+        args.day_start = [3, 0, 0]
 
     args.start_config = {}
     if 'RECEIVE_START_TIME_MAP' in cfg:

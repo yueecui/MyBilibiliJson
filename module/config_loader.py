@@ -12,6 +12,7 @@ DEFAULT_CONFIG = {
     },
     'RECEIVE_CONFIG': {
         'sleep_time': 0.3,
+        'day_start': '03:00:00',
         'start_time': '',
     }
 }

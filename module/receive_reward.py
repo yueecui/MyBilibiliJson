@@ -10,6 +10,9 @@ def receive_reward(args):
 
     check_start(args, award)
 
+    # 启动时是否还有奖励
+    start_at_has_remain = False
+
     count = 0
     while True:
         if award.receive_id == 0:
@@ -27,10 +30,16 @@ def receive_reward(args):
             break
 
         if not award.has_daily_stock:
-            logging.info(f'每日领取数量已达上限')
-            award.update_award()
-            time.sleep(args.sleep_time)
-            continue
+            if start_at_has_remain:
+                logging.info(f'该类型奖励已经达到每日领取上限')
+                break
+            else:
+                logging.info(f'每日领取数量已达上限')
+                award.update_award()
+                time.sleep(args.sleep_time)
+                continue
+        else:
+            start_at_has_remain = True
 
         if award.receive():
             logging.info(f'已领取成功，请去网页查看')
@@ -54,20 +63,42 @@ def check_start(args, award):
             break
 
     if start_time is not None:
+        show_start_time = start_time.copy()
+        if compare_time(args.day_start, start_time):
+            start_time[0] += 24
         while True:
-            # 分别获取当前的时、分、秒
-            now_time = time.localtime()
-            # 判断当前时间是否大于开始时间
-            if now_time.tm_hour > start_time[0]:
+            if can_start(start_time, args.day_start):
                 break
 
-            if now_time.tm_hour == start_time[0]:
-                if now_time.tm_min > start_time[1]:
-                    break
-                if now_time.tm_min == start_time[1] and now_time.tm_sec >= start_time[2]:
-                    break
-
             time.sleep(1)
-            logging.info(f'[开始时间 {"%02d:%02d:%02d" % (start_time[0], start_time[1], start_time[2])}]{award_name}')
+            logging.info(f'[开始时间 {"%02d:%02d:%02d" % (show_start_time[0], show_start_time[1], show_start_time[2])}]{award_name}')
 
     args.is_start = True
+
+
+def can_start(start_time, day_start):
+    # 分别获取当前的时、分、秒
+    now_time = time.localtime()
+    now_time = [now_time.tm_hour, now_time.tm_min, now_time.tm_sec]
+
+    if compare_time(day_start, now_time):
+        now_time[0] += 24
+
+    if compare_time(start_time, now_time):
+        return True
+    return False
+
+
+# 比较2个时间数组的大小
+# 数组格式为：[小时，分钟，秒]
+# 如果第一个数组大于等于第二个数组，返回True，否则返回False
+def compare_time(time1, time2):
+    if time1[0] > time2[0]:
+        return True
+    if time1[0] == time2[0]:
+        if time1[1] > time2[1]:
+            return True
+        if time1[1] == time2[1] and time1[2] >= time2[2]:
+            return True
+    return False
+
