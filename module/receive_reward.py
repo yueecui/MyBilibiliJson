@@ -84,7 +84,7 @@ def can_start(start_time, day_start):
     if compare_time(day_start, now_time):
         now_time[0] += 24
 
-    if compare_time(start_time, now_time):
+    if compare_time(now_time, start_time):
         return True
     return False
 
