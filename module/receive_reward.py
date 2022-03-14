@@ -9,6 +9,7 @@ def receive_reward(args):
     logging.info(f'===================================================================')
 
     check_start(args, award)
+    award.update_award()
 
     # 启动时是否还有奖励
     start_at_has_remain = False
