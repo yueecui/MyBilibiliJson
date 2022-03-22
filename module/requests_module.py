@@ -2,7 +2,6 @@ import logging
 import requests
 from .chrome_cookies import get_bilibili_cookies
 
-
 POST_HEADERS = {
     # ":method": "POST",
     # ":authority": "api.bilibili.com",

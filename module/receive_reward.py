@@ -1,6 +1,7 @@
 import logging
 import time
 from .bili_activity_award import BiliActivityAward
+from .util import compare_time
 
 
 def receive_reward(args):
@@ -72,7 +73,8 @@ def check_start(args, award):
                 break
 
             time.sleep(1)
-            logging.info(f'[开始时间 {"%02d:%02d:%02d" % (show_start_time[0], show_start_time[1], show_start_time[2])}]{award_name}')
+            logging.info(
+                f'[开始时间 {"%02d:%02d:%02d" % (show_start_time[0], show_start_time[1], show_start_time[2])}]{award_name}')
 
     args.is_start = True
 
@@ -88,18 +90,3 @@ def can_start(start_time, day_start):
     if compare_time(now_time, start_time):
         return True
     return False
-
-
-# 比较2个时间数组的大小
-# 数组格式为：[小时，分钟，秒]
-# 如果第一个数组大于等于第二个数组，返回True，否则返回False
-def compare_time(time1, time2):
-    if time1[0] > time2[0]:
-        return True
-    if time1[0] == time2[0]:
-        if time1[1] > time2[1]:
-            return True
-        if time1[1] == time2[1] and time1[2] >= time2[2]:
-            return True
-    return False
-
