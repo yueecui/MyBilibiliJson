@@ -7,6 +7,7 @@ from module.generate_all_reward import generate_all_reward, get_days_number
 from module.receive_reward import receive_reward
 from module.chrome_cookies import init_bilibili_cookies
 from module.config_loader import config_loader
+from module.shutdown import shutdown
 
 
 def init_logging(debug):
@@ -35,6 +36,9 @@ def update_args_from_config(args):
     # 初始化领取奖励时的参数
     args.sleep_time = cfg.getfloat('RECEIVE_CONFIG', 'sleep_time')
     args.start_time = find_start_time(cfg.get('RECEIVE_CONFIG', 'start_time'))
+    args.day_start = find_start_time(cfg.get('RECEIVE_CONFIG', 'day_start'))
+    if args.day_start is None:
+        args.day_start = [3, 0, 0]
 
     args.start_config = {}
     if 'RECEIVE_START_TIME_MAP' in cfg:
@@ -42,6 +46,10 @@ def update_args_from_config(args):
             args.start_config[key] = find_start_time(cfg.get('RECEIVE_START_TIME_MAP', key))
 
     args.is_start = False
+
+    # 关机时间
+    if args.shutdown is not None:
+        args.shutdown = find_start_time(args.shutdown)
 
     return args
 
@@ -59,7 +67,7 @@ def main():
     # 创建命令行参数解析器
     parser = argparse.ArgumentParser(
         description='My Bilibili Json',
-        epilog='最后更新日期: 2022-01-05')
+        epilog='最后更新日期: 2022-03-22')
 
     # 不输入参数时显示帮助
     # 输入一个位置参数时，参数为活动地址网页（https://www.bilibili.com/blackboard/activity-8Zdc2qDY6R.html 类似），生成该网页所有奖励原石、还有货、还没领过的bat
@@ -70,6 +78,7 @@ def main():
     # parser.add_argument('-p', '-u', '--profile', '--user', default='Default',
     #                     help='读取的chrome profile名称。默认为Default，路径：%%LOCALAPPDATA%%\\Google\\Chrome\\User Data')
     parser.add_argument('-r', '--reward', help='尝试不停领取目标ID奖励')
+    parser.add_argument('--shutdown', action='store', help='关机时间，格式为HH:MM:SS')
     parser.add_argument('--debug', action='store_true', help='输出调试log')
 
     # 获取解析后的参数
@@ -89,6 +98,8 @@ def main():
                 logging.error('运行时出现错误，错误信息：%s' % e)
                 logging.info('1秒后开始重新运行')
                 time.sleep(1)
+    elif args.shutdown is not None:
+        shutdown(args)
     elif args.url is not None:
         if args.days:
             get_days_number(args)
@@ -100,5 +111,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

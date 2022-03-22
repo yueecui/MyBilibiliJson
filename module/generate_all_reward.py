@@ -72,7 +72,6 @@ def generate_bat(task_list):
             continue
         bat_file_path = os.path.join(bat_name)
         if file_type == '.bat' and (not os.path.isdir(bat_file_path)) and os.path.exists(bat_file_path):
-
             os.remove(bat_file_path)
 
     exe_name = os.path.split(sys.argv[0])[1]
