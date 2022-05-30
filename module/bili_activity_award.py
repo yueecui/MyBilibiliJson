@@ -1,4 +1,5 @@
 import time
+import math
 from .requests_module import requests_post, requests_get
 from .chrome_cookies import get_bilibili_cookies
 
@@ -60,7 +61,11 @@ class BiliActivityAward:
     def name(self):
         if self._raw_data is None:
             self.update_award()
-        return f'[{self._task_id}]{self.task_name} - {self.reward_name}'
+        daily, total = self.get_stock_config()
+        if daily > 0 and total > 0:
+            return f'[{self._task_id}]{self.task_name} - {self.reward_name}({daily},{total})'
+        else:
+            return f'[{self._task_id}]{self.task_name} - {self.reward_name}'
 
     @property
     def has_total_stock(self):
@@ -93,6 +98,39 @@ class BiliActivityAward:
         if self._raw_data is None:
             self.update_award()
         return time.time() >= self._raw_data['data']['act_info']['end_time']
+
+    def get_stock_config(self):
+        if self._raw_data is None:
+            self.update_award()
+        daily = 0
+        total = 0
+        data = self._raw_data['data']
+        if data is None:
+            return daily, total
+        task_info = data.get('task_info')
+        if task_info is None:
+            return daily, total
+        stock_config = task_info.get('reward_stock_configs')
+        if stock_config is None:
+            return daily, total
+
+        for config in stock_config:
+            if config['cycle_type'] == 2:
+                daily = config['total']
+            elif config['cycle_type'] == 1:
+                total = config['total']
+        return daily, total
+
+    def get_start_date_timestamp(self):
+        if self._raw_data is None:
+            self.update_award()
+        start = time.localtime(self._raw_data['data']['act_info']['begin_time'])
+        return int(time.mktime(
+            time.strptime(f'{start.tm_year}-{start.tm_mon}-{start.tm_mday} 00:00:00', '%Y-%m-%d %H:%M:%S')))
+
+    # 获取今天是活动开始后的第几天
+    def get_length_from_start(self):
+        return math.ceil((time.time() - self.get_start_date_timestamp()) / 86400)
 
     # 尝试进行领取
     def receive(self):

@@ -2,6 +2,7 @@ import logging
 import re
 import os
 import sys
+import time
 from .requests_module import requests_get
 from .bili_activity_award import BiliActivityAward
 
@@ -104,6 +105,25 @@ def get_days_number(args):
 
     response = requests_get(url)
     html = response.text
+
+    # 先查找总天数
+    find = re.findall(r'window.__initialState = (.+);\n', html)
+    if not find:
+        raise Exception('查找 initialState 失败')
+
+    task_list = []
+    all_task = re.findall(
+        r'"https://www\.bilibili\.com/blackboard/activity-award-exchange\.html\?task_id=([^\s]{8}).*?"',
+        find[0]
+    )
+    for task_id in all_task:
+        award = BiliActivityAward(task_id)
+        if not award.is_exist:
+            continue
+        from_start_days = award.get_length_from_start()
+        logging.info(f'今天是活动开始的第{from_start_days}天')
+        break
+
     find = re.findall(r'var jumpUrl = \'https://www\.bilibili\.com/blackboard/dynamic/(\d+)\';\n', html)
     if not find:
         raise Exception('查找 jumpUrl 失败')
