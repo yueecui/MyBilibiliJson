@@ -2,6 +2,7 @@ import logging
 import re
 import os
 import sys
+import json
 import time
 from .requests_module import requests_get
 from .bili_activity_award import BiliActivityAward
@@ -21,7 +22,7 @@ def parse_activity_reward(args):
 
     response = requests_get(url)
     html = response.text
-    find = re.findall(r'window.__initialState = (.+);\n', html)
+    find = re.findall(r'window\.__initialState=(.+)', html)
     if not find:
         raise Exception('查找 initialState 失败')
     # initial_state = json.loads(find[0])
@@ -107,7 +108,7 @@ def get_days_number(args):
     html = response.text
 
     # 先查找总天数
-    find = re.findall(r'window.__initialState = (.+);\n', html)
+    find = re.findall(r'window\.__initialState=(.+)', html)
     if not find:
         raise Exception('查找 initialState 失败')
 
@@ -125,6 +126,8 @@ def get_days_number(args):
         break
 
     find = re.findall(r'var jumpUrl = \'https://www\.bilibili\.com/blackboard/dynamic/(\d+)\';\n', html)
+    if not find:
+        find = re.findall(r'jumpUrl:"https://www\.bilibili\.com/blackboard/dynamic/(\d+)"', html)
     if not find:
         raise Exception('查找 jumpUrl 失败')
 
