@@ -22,7 +22,9 @@ def parse_activity_reward(args):
 
     response = requests_get(url)
     html = response.text
-    find = re.findall(r'window\.__initialState=(.+)', html)
+    find = re.findall(r'window.__initialState = (.+);\n', html)
+    if not find:
+        find = re.findall(r'window\.__initialState=(.+)', html)
     if not find:
         raise Exception('查找 initialState 失败')
     # initial_state = json.loads(find[0])
@@ -108,7 +110,9 @@ def get_days_number(args):
     html = response.text
 
     # 先查找总天数
-    find = re.findall(r'window\.__initialState=(.+)', html)
+    find = re.findall(r'window.__initialState = (.+);\n', html)
+    if not find:
+        find = re.findall(r'window\.__initialState=(.+)', html)
     if not find:
         raise Exception('查找 initialState 失败')
 
