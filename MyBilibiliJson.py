@@ -27,6 +27,7 @@ def update_args_from_config(args):
 
     # 初始化查找时的参数
     args.url = cfg.get('FIND_CONFIG', 'url')
+    args.progress_keyword = cfg.get('FIND_CONFIG', 'progress_keyword')
     args.keyword = cfg.get('FIND_CONFIG', 'keyword')
     if args.keyword == '':
         args.keyword = []

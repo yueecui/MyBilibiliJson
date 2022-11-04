@@ -139,12 +139,77 @@ def get_days_number(args):
     response = requests_get(dynamic_info_url)
 
     data = response.json()
+
+    progress_number = get_progress_number_v2(args, data)
+    if progress_number > -1:
+        logging.info(f'目前里程碑已经完成{progress_number}天')
+    else:
+        logging.info(f'没有找到里程碑完成数据情况')
+
+
+# 第二版获取方法 2022年11月5日
+def get_progress_number_v2(args, data):
+    for item in data['data']['cards']:
+        progress_url = find_subpage_url(args, item)
+        if progress_url:
+            break
+
+    if progress_url is None:
+        raise Exception('查找 progress_url 失败')
+    response = requests_get(progress_url)
+    html = response.text
+
+    # 查找数据位置
+    find = re.findall(r'window.__initialState = (.+);\n', html)
+    if not find:
+        find = re.findall(r'window\.__initialState=(.+)', html)
+    if not find:
+        raise Exception('查找移动端 initialState 失败')
+
+    data = json.loads(find[0])
+    task_progress = data.get('task-progress', None)
+    if task_progress is None or len(task_progress) == 0:
+        return -1
+
+    sid = task_progress[0]['sid']
+    counter = task_progress[0]['counter']
+
+    task_api_url = f'https://api.bilibili.com/x/task/total?counter_names={counter}&sid={sid}&type=2'
+    response = requests_get(task_api_url)
+    data = response.json()
+
+    return data['data']['list'][0]['total']
+
+def find_subpage_url(args, item):
+    if not item['goto'].startswith('click'):
+        return None
+
+    if 'uri' in item:
+        find = re.findall(r'https://www\.bilibili\.com/blackboard/activity-.*?\.html', item['uri'])
+        if find:
+            response = requests_get(item['uri'])
+            html = response.text
+            find = re.findall(r'<title>.*?' + args.progress_keyword + '.*?</title>', html)
+            if find:
+                return item['uri']
+
+    if 'item' in item:
+        for sub_item in item['item']:
+            result = find_subpage_url(args, sub_item)
+            if result:
+                return result
+
+    return None
+
+
+# 该方法已经过期 2022年11月5日
+def get_progress_number(data):
     for item in data['data']['cards']:
         progress_number = find_progress(item)
         if progress_number > -1:
-            logging.info(f'目前里程碑已经完成{progress_number}天')
-            return
-    logging.info(f'没有找到里程碑完成数据情况')
+            return progress_number
+
+    return -1
 
 
 def find_progress(item) -> int:
