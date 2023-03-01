@@ -68,7 +68,7 @@ def main():
     # 创建命令行参数解析器
     parser = argparse.ArgumentParser(
         description='My Bilibili Json',
-        epilog='最后更新日期: 2022-03-22')
+        epilog='最后更新日期: 2023-03-01')
 
     # 不输入参数时显示帮助
     # 输入一个位置参数时，参数为活动地址网页（https://www.bilibili.com/blackboard/activity-8Zdc2qDY6R.html 类似），生成该网页所有奖励原石、还有货、还没领过的bat

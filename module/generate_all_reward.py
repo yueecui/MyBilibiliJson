@@ -60,7 +60,7 @@ def parse_activity_reward(args):
 
         task_list.append({
             'id': award.task_id,
-            'name': award.name,
+            'name': award.name.replace('\t', '').strip(),
         })
         logging.info(f'{award.name}：已找到')
     return task_list
