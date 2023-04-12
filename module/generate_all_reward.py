@@ -35,6 +35,7 @@ def parse_activity_reward(args):
         find[0]
     )
     for task_id in all_task:
+        time.sleep(args.sleep_time)
         award = BiliActivityAward(task_id)
         if not award.is_exist:
             logging.info(f'任务{task_id}：信息为空，跳过生成')
