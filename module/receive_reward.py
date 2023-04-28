@@ -11,6 +11,7 @@ def receive_reward(args):
 
     check_start(args, award)
     award.update_award()
+    time.sleep(args.sleep_time)
 
     # 启动时是否还有奖励
     start_at_has_remain = False
@@ -50,6 +51,7 @@ def receive_reward(args):
             logging.info(f'正在尝试进行领取奖励')
             count += 1
             if count % 10 == 0:
+                time.sleep(args.sleep_time)
                 award.update_award()
             time.sleep(args.sleep_time)
 

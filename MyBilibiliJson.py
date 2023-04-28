@@ -97,8 +97,8 @@ def main():
                 break
             except Exception as e:
                 logging.error('运行时出现错误，错误信息：%s' % e)
-                logging.info('1秒后开始重新运行')
-                time.sleep(1)
+                logging.info(str(args.sleep_time)+'秒后开始重新运行')
+                time.sleep(args.sleep_time)
     elif args.shutdown is not None:
         shutdown(args)
     elif args.url is not None:
